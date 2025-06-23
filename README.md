@@ -111,7 +111,7 @@ println("Total bites taken   : $(n_bites)")
 
 Citing
 
-If you use FatScaling.jl in your work, please cite the forthcoming paper (preprint DOI pending).  
+If you use fatscaling.jl in your work, please cite the forthcoming paper (preprint DOI pending).  
 
 
 ⸻
