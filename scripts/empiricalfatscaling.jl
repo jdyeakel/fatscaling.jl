@@ -169,7 +169,8 @@ plot!(fatplot,massvec,exp(coef(model_large)[1]).*massvec.^(coef(model_large)[2])
     legend=:topleft,
     foreground_color_legend = nothing)
 
-Plots.savefig(fatplot, string(homedir(),"/Dropbox/PostDoc/2024_herbforaging/figures/fig_fat.pdf"))
+figfile = smartpath("rawfigures/fig_fat.pdf")
+Plots.savefig(fatplot, figfile)
 
 
 
@@ -363,6 +364,10 @@ fatdata = fatdata[findall(x->x!="mammal",fatdata.taxa),:]
 fatdata = fatdata[findall(x->x=="measured",fatdata.measure_estimate),:]
 # fatdata = fatdata[findall(x->x>0.5,fatdata[!,:mass_kg]),:]
 
+#Path to dated tree - place in R environ for later loading
+tre_path = smartpath("data/dated_tree.tre")   # absolute path as String
+@rput tre_path            # now R has an object called tre_path
+
 ###############################################################################
 # 0.  LOAD PACKAGES
 ###############################################################################
@@ -536,7 +541,7 @@ tree <- reorder(tree, "postorder")
 
 
 # OR JUST READ IN EMILY JANE'S TREE!
-tree<-read.tree("~/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/dated_tree.tre")
+tree<-read.tree(tre_path)
 # replace the space between genus and species with an underscore to match EJ format
 rownames(bysp_clean) <- gsub(" ", "_", rownames(bysp_clean))
 tree$root.edge = 0

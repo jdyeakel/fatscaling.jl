@@ -150,27 +150,6 @@ end
 
 
 
-
-# function maxfatstorage(mass,edensity_fat)
-#     mass_g = mass * 1000; #[kg]->[g]
-
-#     # from Yeakel et al 2018 Dynamics of starvation and recovery
-#     #mass at which you die, no fat or muscle
-#     fat_mass =  0.02*mass_g^1.19;           #[g]
-
-#     storage_kg = fat_mass/1000;
-
-#     #Joules per gram
-#     # joules_per_gram = 20000; #varies between 7000 to 36000 [int] [J/g]
-#     # kjoules_per_gram = joules_per_gram / 1000;   # [int/int=int] [kJ/g]
-#     kjoules_per_gram = edensity_fat; #kJ/g
-
-#     storage_kj = (fat_mass) * kjoules_per_gram;
-
-#     return storage_kj, storage_kg
-# end
-
-
 function fatrecoveryrate(mass,start_perc,end_perc)
     #From Yeakel et al. 2018
     #mass should be in grams
