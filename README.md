@@ -40,7 +40,7 @@
 pkg> add https://github.com/jdyeakel/fatscaling.jl
 ```
 
-OR:  
+OR if you wish to hack at it:  
 ```bash
 # Clone and develop locally (recommended if you’re hacking on the source)
 git clone https://github.com/jdyeakel/fatscaling.jl
@@ -52,7 +52,7 @@ julia --project -e 'using Pkg; Pkg.develop(path="."); Pkg.instantiate()'
 
 Prerequisites
 	•	Julia ≥ 1.10
-	•	Distributions, DataFrames, GLM, Plots, CSV, JLD2, ProgressMeter
+	•	Distributions, DataFrames, LinearAlgebra
 These are declared in Project.toml; $ julia --project -e 'using Pkg; Pkg.instantiate()' will grab them.
 
 ⸻
