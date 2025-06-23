@@ -1,6 +1,6 @@
 # fatscaling.jl
 ## Code for manuscript: An origin for the allometric scaling of mammalian fat reflects populations living on the edge  
-### Yeakel et al.  
+### Justin D. Yeakel, Mason Fan, Emily Jane McTavish, Anna Carolina de Almeida, Christopher P. Kempes, Sora Kim, Greg Breed
 
 *A framework for exploring how body-size scaling of **foraging gains, costs, and gut capacity** shapes fat storage across mammals.*. 
 
