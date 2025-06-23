@@ -62,6 +62,9 @@ These are declared in Project.toml; $ julia --project -e 'using Pkg; Pkg.instant
 # Quick start – one-off demo run
 ###############################################################################
 using fatscaling                 # loads the public API
+using Distributions
+using LinearAlgebra
+using DataFrames
 
 # ----------------------- choose a single parameter set -----------------------
 mass      = 35.0          # kg
