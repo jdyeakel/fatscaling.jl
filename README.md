@@ -69,8 +69,8 @@ using DataFrames
 # ----------------------- choose a single parameter set -----------------------
 mass      = 35.0          # kg
 gut       = "colon"       # one of "caecum", "colon", "non-rumen foregut", "rumen foregut"
-teeth     = "all"
-μ         = 1e-2          # resource richness (bites m⁻² d⁻¹)
+teeth     = "all"         # average tooth type determines chew rate - not explored in text
+μ         = 1e-2          # resource richness (grams m⁻²)
 ζ         = 1.0           # patchiness exponent
 α         = 4.0           # Gamma shape parameter
 edensity  = 18.2          # kJ g⁻¹ dry matter
@@ -101,11 +101,14 @@ gain, cost, n_bites = dailyforage(
     γ_dist, tchew, β, maxgut, velocity,
     bcost, fcost, edensity, tmax_bout
 )
+net = gain - cost;
 
-println("Daily energy gain  : $(round(gain,  2)) kJ")
-println("Daily energetic cost: $(round(cost, 2)) kJ")
-println("Daily net energy    : $(round(gain - cost, 2)) kJ")
-println("Total bites taken   : $(n_bites)")
+tbl  = DataFrame(  :energy_gain_kJ  => round(gain; digits = 2),
+                   :energy_cost_kJ  => round(cost; digits = 2),
+                   :net_energy_kJ   => round(net;  digits = 2),
+                   :bites_taken     => n_bites )
+
+display(tbl)
 ```
 
 
