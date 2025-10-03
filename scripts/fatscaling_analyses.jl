@@ -1019,6 +1019,11 @@ maxpos = findmax(meanreserveratio[:,1])
 scatter!(plt,[massvec[maxpos[2]]],[maxpos[1]],
     color = colors[1],
     label = false)
+scatter!(plt,[massvec[maxpos[2]]],[maxpos[1]],
+        color = colors[1],
+        markerstrokewidth = 2,
+        markersize = 8,
+        label = false)
 for j in 2:size(meanreserveratio,2)
     maxpos = findmax(meanreserveratio[:,j])
     plot!(plt, massvec, meanreserveratio[:,j],
@@ -1028,6 +1033,15 @@ for j in 2:size(meanreserveratio,2)
     scatter!(plt,[massvec[maxpos[2]]],[maxpos[1]],
         color = colors[j],
         label = false)
+    #Make larger markers for values used in analysis
+    if  j == 16
+        scatter!(plt,[massvec[maxpos[2]]],[maxpos[1]],
+        color = colors[j],
+        markerstrokewidth = 2,
+        markersize = 8,
+        label = false)
+        println([[massvec[maxpos[2]]],[maxpos[1]]])
+    end
 end
 plot!(plt, massvec, repeat([1],outer=l_massvec),
     linestyle=:dot,
@@ -1041,7 +1055,9 @@ for j = 1:l_zetavec
     maxpos = findmax(meanreserveratio[:,j])
     masszetacoords[j,:] = [maxpos[1],massvec[maxpos[2]]]
 end
-minfeasiblemass = massvec[findmin(abs.(masszetacoords[:,1] .- 1))[2]]
+minfeasiblemasspos = findmin(abs.(masszetacoords[:,1] .- 1))[2]
+minfeasiblemass = masszetacoords[minfeasiblemasspos,2]
+
 plt2 = plot(zetavec,masszetacoords[:,2],
     yscale=:log10,
     frame=:box,

@@ -151,7 +151,7 @@ scatter!(fatplot,fatdata[!,:mass_kg][estpos],fatdata[!,:fatmass_kg][estpos],
     label="Estimated: Mf/M = 44%",
     xscale=:log10,
     yscale=:log10,
-    color=colors[1])
+    color=:lightblue)
 iexp = collect(-2:0.1:5);
 massvec = [10^iexp[i] for i=1:length(iexp)]
 plot!(fatplot,massvec,exp(coef(model)[1]).*massvec.^(coef(model)[2]),
