@@ -273,6 +273,21 @@ end
 
 
 
+function foragingtime_alt(mass,error)
+    #Owen Smith 1988 book (data grabbed using PlotDigitizer in /data/)
+    #mass in kg
+    #foraging time in % of 24 hours
+
+    forageperc = 21.0885*mass^(0.124*(1 + error))
+    forageperc_upper95 = 27*mass^0.17
+
+    #translate to hours
+    foragehrs = (forageperc/100)*24
+    foragehrs_upper95 = (forageperc_upper95/100)*24
+
+    return foragehrs, foragehrs_upper95 # hours
+end
+
 # # Bite chew time allometry
 # massvec = [10^i for i=collect(0:0.1:5)];
 # teeth = "bunodont";

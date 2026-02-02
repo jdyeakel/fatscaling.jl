@@ -45,12 +45,16 @@ edensity = 18.2;
 
 # muexpvec = collect(-8.0:0.01:-5.7);
 # muexpvec = collect(-3:0.02:0);
-muexpvec = collect(-3.5:0.02:-1);
+
+#NOTE: modified for SA
+muexpvec = collect(-3.5:0.02:-1); #collect(-3.5:0.02:-1);
 l_muexpvec = length(muexpvec);
-zetavec = [1.0, 1.5, 2.0, 2.15];
+#NOTE: modified for SA
+zetavec = [1.0]; #[1.0, 1.5, 2.0, 2.15];
 l_zetavec = length(zetavec);
 
-reps = 1000
+#NOTE: modified for SA
+reps = 500; #reps = 1000
 
 # Pre-allocate an array to store slopes for each gut type and each muexp value:
 remainder_mu_slope_all = Array{Float64}(undef, n_gut, l_muexpvec);
@@ -61,6 +65,16 @@ encounters_array = Array{Array{Float64}}(undef,n_gut);
 cons_maxgut_array = Array{Array{Float64}}(undef,n_gut);
 gaindiff_array = Array{Array{Float64}}(undef,n_gut);
 gainremainder_array = Array{Array{Float64}}(undef,n_gut);
+
+# MODIFICATION FOR QUALITY V BIOMASS SENSITVITY ANALYSIS
+# proportion digestible by herbivore
+thetavec =  Array{Float64}(undef, l_muexpvec);
+# Baseline: set to 1
+# [thetavec[i] = 1.0 for i in 1:l_muexpvec];
+# Include vegetative quality vs. vegetative biomass relationship
+theta0 = 67.968/100;
+theta1 = (0.0246/100); #*5000;
+[thetavec[i] = theta0 - theta1*(10^muexpvec[i]) for i in 1:l_muexpvec];
 
 # Loop over each gut type
 for g in 1:n_gut
@@ -84,6 +98,9 @@ for g in 1:n_gut
                     muexp = muexpvec[i]
                     zeta = zetavec[j]
                     mu = 10^muexp
+
+                    #Proportion digestible
+                    theta = thetavec[i];
                     
                     # Compute consumer and resource properties
                     # Bite size gram/bite
@@ -127,7 +144,8 @@ for g in 1:n_gut
                     gains_daily, costs_daily, encounters_daily = dailyforage(gammadist, tchew, beta, maxgut, velocity, bcost_kJps, fcost_kJps, edensity, tmax_bout)
                     
                     #Save values
-                    gains[r,m,i,j] = gains_daily
+                    #NOTE: modified gains for SA
+                    gains[r,m,i,j] = theta*gains_daily
                     costs[r,m,i,j] = costs_daily
                     encounters[r,m,i,j] = encounters_daily
                     cons_maxgut[m] = maxgut*edensity
@@ -220,6 +238,8 @@ filename = string(homedir(),"/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/
 @load filename gut_types n_gut massexpvec massvec l_massvec teeth alpha edensity muexpvec l_muexpvec zetavec l_zetavec reps gains_array costs_array encounters_array cons_maxgut_array gaindiff_array gainremainder_array remainder_mu_slope_all minmass_array 
 
 # filepath = string(homedir(),"/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/expgainremainderslope.CSV")
+
+#LOAD ANALYTICAL SOLUTION
 filename = smartpath("data/expgainremainderslope.CSV")
 expgainremainder_poor = CSV.read(filename, DataFrame)
 expgainremainder_poor = Array(expgainremainder_poor)
@@ -240,7 +260,7 @@ pgutslope = plot(
     frame = :box,
     foreground_color_legend = nothing
               )
-colors = palette(:tab10) #, n_gut)  # Get n_gut colors
+colors = palette(:tab10) #, n_gut)  # Get exactly n_gut colors
 for g in 1:n_gut
     col = colors[g]
     gutslope = gut_type_maxgutslope[g]
@@ -267,37 +287,37 @@ for g in 1:n_gut
     m = :rect)
     scatter!(pgutslope, [gutslope], [exp_slope2],markersize=5,color=col,label=gut_types_cap[g])
     plot!(pgutslope,
-      [gutslope, gutslope],
-      [exp_slope2, gutslope],
-      lw=2,
+      [gutslope, gutslope],            # x coordinates (constant)
+      [exp_slope2, gutslope],          # y coordinates (from exp_slope2 up to gutslope)
+      lw=2,                          # line width
       alpha=0.5,
-      color=col,
-      label=false)
+      color=col,                       # same color if you like
+      label=false)                     # no extra legend entry
 end
 plot!(pgutslope,collect(0.85:0.01:0.95),collect(0.85:0.01:0.95),
     color="black",
     width=2,
     label=false)
 scatter!(pgutslope,
-    [0, 0],
-    [0, 0],
+    [0, 0],            # x coordinates (constant)
+    [0, 0],          # y coordinates (from exp_slope2 up to gutslope)                         # line width
     alpha=1,
-    color="white",
+    color="white",                       # same color if you like
     markerstrokecolor="white",
     label=" ")    
 scatter!(pgutslope,
-    [0, 0],
-    [0, 0],
+    [0, 0],            # x coordinates (constant)
+    [0, 0],          # y coordinates (from exp_slope2 up to gutslope)                         # line width
     alpha=1,
-    color="black",
-    label="Analytical approx.")
+    color="black",                       # same color if you like
+    label="Analytical approx.")                     # no extra legend entry
 scatter!(pgutslope,
-    [0, 0],
-    [0, 0],
+    [0, 0],            # x coordinates (constant)
+    [0, 0],          # y coordinates (from exp_slope2 up to gutslope)                         # line width
     alpha=1,
     m = :rect,
-    color="black",
-    label="Simulation")
+    color="black",                       # same color if you like
+    label="Simulation")                     # no extra legend entry
 pgutslope
 figfile = smartpath("rawfigures/fig_gutprediction.pdf")
 Plots.savefig(pgutslope, figfile)
@@ -342,7 +362,7 @@ for g in 1:n_gut
     # exp_slope2 = g_slope + (intc*(c_slope - g_slope)*M^c_slope)/(intc*M^c_slope - intg*M^g_slope)
     exp_slope2 = gutslope + (intc*(c_slope - gutslope)*M^c_slope)/(intc*M^c_slope - intg*M^gutslope)
     plot!(muexpvec, remainder_mu_slope_all[g, :], label=gut_types_cap[g], lw=2,color=col)
-    scatter!(pslope, [muexpvec[end]], [exp_slope2],markersize=5,color=col,label="")
+    # scatter!(pslope, [muexpvec[end]], [exp_slope2],markersize=5,color=col,label="")
 end
 gainpos = log10.(expgainremainder_poor[:,1]) .> -3.2;
 Plots.plot!(log10.(expgainremainder_poor[gainpos,1]),(expgainremainder_poor[gainpos,2]),
@@ -353,47 +373,40 @@ Plots.plot!(log10.(expgainremainder_poor[gainpos,1]),(expgainremainder_poor[gain
     linestyle = :dot
     # markersize=3,
     )
-# PLOT EMPIRICAL FAT-MASS EXPONENTS
-valid_indices = findall(!isnan, remainder_mu_slope_all[1, :])
-lindstedtvalue = 1.19; 
-lindstedtcoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- lindstedtvalue))[2]]], lindstedtvalue]
-scatter!(pslope,[lindstedtcoords[1]],[lindstedtcoords[2]],
-    markersize=6,
-    color="gray",
-    label="Previous")
-fullsetvalue = 1.17;
-fullsetcoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- fullsetvalue))[2]]], fullsetvalue]
-scatter!(pslope,[fullsetcoords[1]],[fullsetcoords[2]],
-    markersize=6,
-    color="black",
-    label="OLS fit")
-pglsvalue = 1.14;
-pglssetcoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- pglsvalue))[2]]], pglsvalue]
-scatter!(pslope,[pglssetcoords[1]],[pglssetcoords[2]],
-    markersize=6,
-    m = :rect,
-    color="black",
-    label="PGLS fit")
-captivevalue = 0.95;
-captivecoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- captivevalue))[2]]], captivevalue]
-captivecoords2 = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[3, valid_indices] .- captivevalue))[2]]], captivevalue]
-scatter!(pslope,[captivecoords[1]],[captivecoords[2]],
-    markersize=6,
-    color="white",
-    label="Captive")
-plot!(pslope,[captivecoords[1]*0.99,captivecoords2[1]*1.01], [captivecoords[2],captivecoords2[2]],
-    width=2,
-    color="black",
-    label=false)
-scatter!(pslope,[captivecoords2[1]],[captivecoords2[2]],
-    markersize=6,
-    color="white",
-    label=false)
+# # PLOT EMPIRICAL FAT-MASS EXPONENTS
+# valid_indices = findall(!isnan, remainder_mu_slope_all[1, :])
+# lindstedtvalue = 1.19; 
+# lindstedtcoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- lindstedtvalue))[2]]], lindstedtvalue]
+# scatter!(pslope,[lindstedtcoords[1]],[lindstedtcoords[2]],
+#     markersize=6,
+#     color="gray",
+#     label="Previous")
+#     fullsetvalue = 1.17;
+# fullsetcoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- fullsetvalue))[2]]], fullsetvalue]
+# scatter!(pslope,[fullsetcoords[1]],[fullsetcoords[2]],
+#     markersize=6,
+#     color="black",
+#     label="This paper")
+# captivevalue = 0.95;
+# captivecoords = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[1, valid_indices] .- captivevalue))[2]]], captivevalue]
+# captivecoords2 = [muexpvec[valid_indices[findmin(abs.(remainder_mu_slope_all[3, valid_indices] .- captivevalue))[2]]], captivevalue]
+# scatter!(pslope,[captivecoords[1]],[captivecoords[2]],
+#     markersize=6,
+#     color="white",
+#     label="Captive")
+# plot!(pslope,[captivecoords[1]*0.99,captivecoords2[1]*1.01], [captivecoords[2],captivecoords2[2]],
+#     width=2,
+#     color="black",
+#     label=false)
+# scatter!(pslope,[captivecoords2[1]],[captivecoords2[2]],
+#     markersize=6,
+#     color="white",
+#     label=false)
 
 display(pslope)
 
 # SAVE FIGURE 4
-figfile = smartpath("rawfigures/fig_gainsremainder_slopev2.pdf")
+figfile = smartpath("rawfigures/fig_gainsremainder_slopev2_qualitybiomassSA_5000slope.pdf")
 Plots.savefig(pslope, figfile)
 
 
@@ -560,54 +573,37 @@ plot!(log.(massvec),log.(costsi))
 
 
 
-###################################################################
-# NON-DEMOGRAPHIC RESERVE RATIO 
-###################################################################
 
-guti = 1;
-zeta1 = 1;
 
-# USE THIS FOR OLS FIT
-gammastar = 1.17; mupos = 23;
-# USE THIS FOR PGLS FIT
-gammastar = 1.14; mupos = 24;
 
 
 enci = vec(mean(encounters_array[guti],dims=1)[:,:,mupos,zetai]);
 plot(log.(massvec),log.(enci))
 
+plot(log.(massvec),(gainsi - costsi))
+
 gainremainderi = gainsi .- costsi;
 plot(log.(massvec[gainremainderi .> 0]),log.(gainremainderi[gainremainderi .> 0]))
 
-# Get gains and costs slopes
 x = log.(massvec);
 y = log.(costsi);
 df = DataFrame(x = x, y = y);
 model = lm(@formula(y ~ x), df);
 println(coef(model))
-c1 = coef(model)[2]
 
 x = log.(massvec);
 y = log.(gainsi);
 df = DataFrame(x = x, y = y);
 model = lm(@formula(y ~ x), df);
 println(coef(model))
-g1 = coef(model)[2]
-
-# NON-DEMOGRAPHIC RESERVE RATIO
-phi = 1 - ((c1-g1)/(gammastar-g1))
-
-
 
 
 ###################################################################
 # DEMOGRAPHIC RESERVE RATIO CALCULATIONS (doesn't take long to run)
 ###################################################################
 
-# USE THIS FOR OLS FIT
+
 gammastar = 1.17;
-# USE THIS FOR PGLS FIT
-gammastar = 1.14;
 
 #Calculate demographic costs:
 vals = carryingcapacity_costs.(massvec)

@@ -533,6 +533,11 @@ tree$tip.label <- rownames(bysp_clean)[ match(common_std, rows_std) ]
 bysp_clean <- bysp_clean[ tree$tip.label , , drop = FALSE ]   # row-order = tree
 ###############################################################################
 
+
+write.csv(bysp_clean, file = "~/Dropbox/PostDoc/2025_fatscaling/fatscaling/data/bysp_clean.csv", row.names = TRUE)
+
+
+
 # 5. constant branch lengths + postorder (simple, safe) ---------------------
 tree$edge.length <- rep(1, nrow(tree$edge))
 tree <- reorder(tree, "postorder")
@@ -565,6 +570,32 @@ if (requireNamespace("phylolm", quietly = TRUE)) {
   phy_name <- "PGLS (PIC)"
 }
 
+tidy_phylolm <- function(fit) {
+  ct <- summary(fit)$coefficients
+  pcol <- if ("p.value" %in% colnames(ct)) "p.value" else "Pr(>|t|)"
+  data.frame(
+    term      = rownames(ct),
+    estimate  = ct[, "Estimate"],
+    std.error = ct[, "StdErr"],
+    statistic = ct[, "t.value"],
+    p.value   = ct[, pcol],
+    row.names = NULL
+  )
+}
+
+#PAGEL'S LAMBDA version
+fit_lam <- phylolm(
+  log_fat ~ log_mass,
+  data  = bysp_clean,
+  phy   = tree,
+  model = "lambda",
+  REML  = FALSE   # optional; ML is the default anyway
+)
+tidy_lam <- tidy_phylolm(fit_lam)
+
+lambda_hat <- fit_lam$optpar   # this is Pagel's lambda in the lambda model
+lambda_hat
+
 fit_ols <- lm(log_fat ~ log_mass, data = bysp_clean)
 
 library(broom)
@@ -572,21 +603,30 @@ library(broom)
 tidy_ols <- tidy(fit_ols)
 
 ## --- PGLS: phylolm vs. PIC  -----------------------------------------------
-if (inherits(fit_phy, "phylolm")) {
-  ct   <- summary(fit_phy)$coefficients
-  pcol <- if ("p.value" %in% colnames(ct)) "p.value" else "Pr(>|t|)"
+# if (inherits(fit_phy, "phylolm")) {
+#   ct   <- summary(fit_phy)$coefficients
+#   pcol <- if ("p.value" %in% colnames(ct)) "p.value" else "Pr(>|t|)"
 
-  tidy_phy <- data.frame(
-      term      = rownames(ct),
-      estimate  = ct[, "Estimate"],
-      std.error = ct[, "StdErr"],
-      statistic = ct[, "t.value"],
-      p.value   = ct[, pcol],
-      row.names = NULL
-  )
-} else {                       # PIC fallback is an lm object
-  tidy_phy <- tidy(fit_phy)
-}
+#   tidy_phy <- data.frame(
+#       term      = rownames(ct),
+#       estimate  = ct[, "Estimate"],
+#       std.error = ct[, "StdErr"],
+#       statistic = ct[, "t.value"],
+#       p.value   = ct[, pcol],
+#       row.names = NULL
+#   )
+# } else {                       # PIC fallback is an lm object
+#   tidy_phy <- tidy(fit_phy)
+# }
+
+tidy_phy <- if (inherits(fit_phy, "phylolm")) tidy_phylolm(fit_phy) else tidy(fit_phy)
+
+# out <- rbind(
+#   transform(cbind(model = "OLS",    tidy_ols), lambda = NA_real_),
+#   transform(cbind(model = phy_name, tidy_phy), lambda = NA_real_),
+#   transform(cbind(model = "PGLS (Pagel lambda)", tidy_lam), lambda = fit_lam$optpar)
+# )
+
 
 ## --- combine and print -----------------------------------------------------
 out <- rbind(
@@ -598,6 +638,8 @@ print(out)
 
 #WITH ADDED > large-size class analysis
 # 1. Filter to M > 0.5 kg
+
+# PGLS AND OLS for all species (not just larger species)
 
 large_species <- rownames(bysp_clean)[bysp_clean$log_mass > log(0.5)]
 bysp_large <- bysp_clean[large_species, , drop = FALSE]
@@ -664,248 +706,248 @@ print(out_all)
 
 
 
-##############################################
-# PGLS ANALYSIS
-##############################################
+# ##############################################
+# # PGLS ANALYSIS
+# ##############################################
 
-# PGLS Analysis
-filename = smartpath("data/fat_full_dataset.csv")
-fatdata = CSV.read(filename,DataFrame)
-fatdata = fatdata[findall(x->x!="mammal",fatdata.taxa),:]
-fatdata = fatdata[findall(x->x=="measured",fatdata.measure_estimate),:]
-# fatdata = fatdata[findall(x->x>0.5,fatdata[!,:mass_kg]),:]
+# # PGLS Analysis
+# filename = smartpath("data/fat_full_dataset.csv")
+# fatdata = CSV.read(filename,DataFrame)
+# fatdata = fatdata[findall(x->x!="mammal",fatdata.taxa),:]
+# fatdata = fatdata[findall(x->x=="measured",fatdata.measure_estimate),:]
+# # fatdata = fatdata[findall(x->x>0.5,fatdata[!,:mass_kg]),:]
 
-###############################################################################
-# 0.  LOAD PACKAGES
-###############################################################################
-using DataFrames, CSV, Statistics
-using RCall                       # interface to R
-R"""
-options(stringsAsFactors = FALSE)
-"""   # R quirk
+# ###############################################################################
+# # 0.  LOAD PACKAGES
+# ###############################################################################
+# using DataFrames, CSV, Statistics
+# using RCall                       # interface to R
+# R"""
+# options(stringsAsFactors = FALSE)
+# """   # R quirk
 
-# --- keep only well-formed Genus_species strings ---------------
-goodrow(row) = occursin(r"^[a-z]+_[a-z]+$", row.taxa)
-clean_df     = filter(goodrow, fatdata)
+# # --- keep only well-formed Genus_species strings ---------------
+# goodrow(row) = occursin(r"^[a-z]+_[a-z]+$", row.taxa)
+# clean_df     = filter(goodrow, fatdata)
 
-#What was excluded?
-excluded = setdiff(fatdata.taxa,unique(clean_df.taxa))
+# #What was excluded?
+# excluded = setdiff(fatdata.taxa,unique(clean_df.taxa))
 
-# --- summarise to ONE record per species (mean of replicates) ---------------
-bysp = combine(groupby(clean_df, :taxa), 
-               :mass_kg  => mean => :mass_mean,
-               :fatmass_kg => mean => :fat_mean)
+# # --- summarise to ONE record per species (mean of replicates) ---------------
+# bysp = combine(groupby(clean_df, :taxa), 
+#                :mass_kg  => mean => :mass_mean,
+#                :fatmass_kg => mean => :fat_mean)
 
-# log-transform columns in Julia (you could also do this in R)
-bysp.log_mass = log.(bysp.mass_mean)
-bysp.log_fat  = log.(bysp.fat_mean)
+# # log-transform columns in Julia (you could also do this in R)
+# bysp.log_mass = log.(bysp.mass_mean)
+# bysp.log_fat  = log.(bysp.fat_mean)
 
-@rput bysp   # ship the tidy DataFrame to R as a data.frame called `bysp`
-
-
-
-###############################################################################
-##  R BLOCK  —  run inside  R""" … """  after  @rput bysp
-###############################################################################
-R"""
-library(rotl); library(ape); library(caper); library(broom); library(phylolm)
-
-# ---------------------------------------------------------------------------
-# 1.  Name resolution (TNRS)  +  synonym patch
-# ---------------------------------------------------------------------------
-species_raw <- gsub("_", " ", bysp$taxa)
-syn_fix <- c("vampyrops lineatus" = "platyrrhinus lineatus")
-species_fixed <- ifelse(species_raw %in% names(syn_fix),
-                        syn_fix[species_raw], species_raw)
-
-matches <- tnrs_match_names(species_fixed,
-                            context_name = "Mammals",
-                            do_approximate_matching = TRUE)
-
-bad_na <- is.na(matches$ott_id)
-if (any(bad_na))
-  message("Unmatched species dropped: ",
-          paste(species_fixed[bad_na], collapse = ", "))
-
-matches_ok <- matches[!bad_na, ]
-bysp_ok    <- bysp[!bad_na, ]
-
-# ---------------------------------------------------------------------------
-# 2.  Drop duplicates that collapse onto the same accepted name
-# ---------------------------------------------------------------------------
-dupes <- duplicated(matches_ok$unique_name)
-if (any(dupes))
-  message("Duplicates collapsed: ",
-          paste(matches_ok$unique_name[dupes], collapse = ", "))
-
-matches_ok <- matches_ok[!dupes, ]
-bysp_ok    <- bysp_ok[!dupes, ]
-
-# Column that will match tree tip labels exactly
-bysp_ok$species_label <- matches_ok$unique_name
+# @rput bysp   # ship the tidy DataFrame to R as a data.frame called `bysp`
 
 
-# ---------------------------------------------------------------------------
-# 3.  Safe subtree fetch (removes any “pruned” OTT IDs automatically)
-# ---------------------------------------------------------------------------
-safe_induced_tree <- function(ids) {
-  while (TRUE) {
-    tr <- tryCatch(tol_induced_subtree(ott_ids = ids),
-                   error = function(e) e)
-    if (!inherits(tr, "error")) return(tr)
 
-    bad <- as.integer(gsub(".*ott([0-9]+).*", "\\1", tr$message))
-    message("Removed pruned IDs: ", paste(bad, collapse = ", "))
-    ids <- setdiff(ids, bad)
-  }
-}
+# ###############################################################################
+# ##  R BLOCK  —  run inside  R""" … """  after  @rput bysp
+# ###############################################################################
+# R"""
+# library(rotl); library(ape); library(caper); library(broom); library(phylolm)
 
-ott_ids <- matches_ok$ott_id
-tree    <- safe_induced_tree(ott_ids)
+# # ---------------------------------------------------------------------------
+# # 1.  Name resolution (TNRS)  +  synonym patch
+# # ---------------------------------------------------------------------------
+# species_raw <- gsub("_", " ", bysp$taxa)
+# syn_fix <- c("vampyrops lineatus" = "platyrrhinus lineatus")
+# species_fixed <- ifelse(species_raw %in% names(syn_fix),
+#                         syn_fix[species_raw], species_raw)
 
-# tree$tip.label <- matches_ok$unique_name   # ← you already have this
+# matches <- tnrs_match_names(species_fixed,
+#                             context_name = "Mammals",
+#                             do_approximate_matching = TRUE)
 
-# ---------------------------------------------------------------------------
-# SAFE branch-length assignment (no seg-faults, always succeeds)
-# ---------------------------------------------------------------------------
-tree$edge.length <- rep(1, nrow(tree$edge))   # every edge = 1
-tree <- reorder(tree, "postorder")            # keep phylolm happy
+# bad_na <- is.na(matches$ott_id)
+# if (any(bad_na))
+#   message("Unmatched species dropped: ",
+#           paste(species_fixed[bad_na], collapse = ", "))
 
-# ---------------------------------------------------------------------------
-# 4.  SAFE branch-length assignment  (never seg-faults)
-# ---------------------------------------------------------------------------
-needs_lengths <- is.null(tree$edge.length) || any(is.na(tree$edge.length))
+# matches_ok <- matches[!bad_na, ]
+# bysp_ok    <- bysp[!bad_na, ]
 
-if (needs_lengths) {
-  grafen_ok <- TRUE
-  tree_try  <- tryCatch(
-                 compute.brlen(tree, method = "Grafen", power = 1),
-                 error   = function(e) { grafen_ok <<- FALSE; NULL },
-                 warning = function(w) { grafen_ok <<- FALSE; invokeRestart("muffleWarning") }
-               )
-  if (grafen_ok) {
-    tree <- tree_try
-    message("Branch lengths: Grafen’s method applied.")
-  } else {
-    tree$edge.length <- rep(1, nrow(tree$edge))
-    message("Grafen crashed → set every branch length to 1.")
-  }
-}
+# # ---------------------------------------------------------------------------
+# # 2.  Drop duplicates that collapse onto the same accepted name
+# # ---------------------------------------------------------------------------
+# dupes <- duplicated(matches_ok$unique_name)
+# if (any(dupes))
+#   message("Duplicates collapsed: ",
+#           paste(matches_ok$unique_name[dupes], collapse = ", "))
 
-bysp_df <- as.data.frame(bysp_ok)             # bysp_ok from earlier
-rownames(bysp_df) <- bysp_df$species_label    # EXACT match to tree$tip.label
+# matches_ok <- matches_ok[!dupes, ]
+# bysp_ok    <- bysp_ok[!dupes, ]
 
-bysp_clean <- bysp_df[ , c("log_mass", "log_fat") ]   # drop taxa & label cols
+# # Column that will match tree tip labels exactly
+# bysp_ok$species_label <- matches_ok$unique_name
 
 
-###############################################################################
-##  ALIGN TREE WITH DATA  #####################################################
-###############################################################################
-library(ape)
+# # ---------------------------------------------------------------------------
+# # 3.  Safe subtree fetch (removes any “pruned” OTT IDs automatically)
+# # ---------------------------------------------------------------------------
+# safe_induced_tree <- function(ids) {
+#   while (TRUE) {
+#     tr <- tryCatch(tol_induced_subtree(ott_ids = ids),
+#                    error = function(e) e)
+#     if (!inherits(tr, "error")) return(tr)
 
-# 1. helper to clean labels -----------------------------------------------
-clean <- function(x) {
-  # 1) strip either "_ott123" *or* " ott123" at the end
-  x1 <- gsub("(_| )ott[0-9]+$", "", x, ignore.case = TRUE)
-  # 2) turn remaining underscores into spaces
-  tolower(gsub("_", " ", x1))
-}
+#     bad <- as.integer(gsub(".*ott([0-9]+).*", "\\1", tr$message))
+#     message("Removed pruned IDs: ", paste(bad, collapse = ", "))
+#     ids <- setdiff(ids, bad)
+#   }
+# }
 
-tips_std <- clean(tree$tip.label)          # e.g. "mus musculus"
-rows_std <- clean(rownames(bysp_clean))    # row-names are already spaced
+# ott_ids <- matches_ok$ott_id
+# tree    <- safe_induced_tree(ott_ids)
 
-# 2. species in common ------------------------------------------------------
-common_std <- intersect(tips_std, rows_std)
-if (!length(common_std))
-  stop("No species overlap between tree and data — check spellings.")
+# # tree$tip.label <- matches_ok$unique_name   # ← you already have this
 
-# 3. prune tree & rename tips ----------------------------------------------
-keep_tip_idx <- match(common_std, tips_std)
-tree <- drop.tip(tree, setdiff(seq_along(tree$tip.label), keep_tip_idx))
+# # ---------------------------------------------------------------------------
+# # SAFE branch-length assignment (no seg-faults, always succeeds)
+# # ---------------------------------------------------------------------------
+# tree$edge.length <- rep(1, nrow(tree$edge))   # every edge = 1
+# tree <- reorder(tree, "postorder")            # keep phylolm happy
 
-# rename the kept tips to the pretty version in your data
-tree$tip.label <- rownames(bysp_clean)[ match(common_std, rows_std) ]
+# # ---------------------------------------------------------------------------
+# # 4.  SAFE branch-length assignment  (never seg-faults)
+# # ---------------------------------------------------------------------------
+# needs_lengths <- is.null(tree$edge.length) || any(is.na(tree$edge.length))
 
-#Save data table for EJ
-# write.table(
-#   tree$tip.label,
-#   file      = "~/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/species_labels.txt",
-#   row.names = FALSE,
-#   col.names = FALSE,
-#   quote     = FALSE
+# if (needs_lengths) {
+#   grafen_ok <- TRUE
+#   tree_try  <- tryCatch(
+#                  compute.brlen(tree, method = "Grafen", power = 1),
+#                  error   = function(e) { grafen_ok <<- FALSE; NULL },
+#                  warning = function(w) { grafen_ok <<- FALSE; invokeRestart("muffleWarning") }
+#                )
+#   if (grafen_ok) {
+#     tree <- tree_try
+#     message("Branch lengths: Grafen’s method applied.")
+#   } else {
+#     tree$edge.length <- rep(1, nrow(tree$edge))
+#     message("Grafen crashed → set every branch length to 1.")
+#   }
+# }
+
+# bysp_df <- as.data.frame(bysp_ok)             # bysp_ok from earlier
+# rownames(bysp_df) <- bysp_df$species_label    # EXACT match to tree$tip.label
+
+# bysp_clean <- bysp_df[ , c("log_mass", "log_fat") ]   # drop taxa & label cols
+
+
+# ###############################################################################
+# ##  ALIGN TREE WITH DATA  #####################################################
+# ###############################################################################
+# library(ape)
+
+# # 1. helper to clean labels -----------------------------------------------
+# clean <- function(x) {
+#   # 1) strip either "_ott123" *or* " ott123" at the end
+#   x1 <- gsub("(_| )ott[0-9]+$", "", x, ignore.case = TRUE)
+#   # 2) turn remaining underscores into spaces
+#   tolower(gsub("_", " ", x1))
+# }
+
+# tips_std <- clean(tree$tip.label)          # e.g. "mus musculus"
+# rows_std <- clean(rownames(bysp_clean))    # row-names are already spaced
+
+# # 2. species in common ------------------------------------------------------
+# common_std <- intersect(tips_std, rows_std)
+# if (!length(common_std))
+#   stop("No species overlap between tree and data — check spellings.")
+
+# # 3. prune tree & rename tips ----------------------------------------------
+# keep_tip_idx <- match(common_std, tips_std)
+# tree <- drop.tip(tree, setdiff(seq_along(tree$tip.label), keep_tip_idx))
+
+# # rename the kept tips to the pretty version in your data
+# tree$tip.label <- rownames(bysp_clean)[ match(common_std, rows_std) ]
+
+# #Save data table for EJ
+# # write.table(
+# #   tree$tip.label,
+# #   file      = "~/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/species_labels.txt",
+# #   row.names = FALSE,
+# #   col.names = FALSE,
+# #   quote     = FALSE
+# # )
+
+
+# # 4. prune & reorder the data frame ----------------------------------------
+# bysp_clean <- bysp_clean[ tree$tip.label , , drop = FALSE ]   # row-order = tree
+# ###############################################################################
+
+# # 5. constant branch lengths + postorder (simple, safe) ---------------------
+# tree$edge.length <- rep(1, nrow(tree$edge))
+# tree <- reorder(tree, "postorder")
+
+
+
+
+# # OR JUST READ IN EMILY JANE'S TREE!
+# tree<-read.tree("~/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/dated_tree.tre")
+# # replace the space between genus and species with an underscore to match EJ format
+# rownames(bysp_clean) <- gsub(" ", "_", rownames(bysp_clean))
+# tree$root.edge = 0
+
+
+
+
+# ###############################################################################
+# ##  MODELS  ###################################################################
+# ###############################################################################
+# if (requireNamespace("phylolm", quietly = TRUE)) {
+#   fit_phy <- phylolm(log_fat ~ log_mass,
+#                      data = bysp_clean,
+#                      phy  = tree,
+#                      model = "BM", method = "ML")
+#   phy_name <- "PGLS (phylolm)"
+# } else {
+#   pic_mass <- pic(bysp_clean$log_mass, tree)
+#   pic_fat  <- pic(bysp_clean$log_fat,  tree)
+#   fit_phy  <- lm(pic_fat ~ pic_mass - 1)        # PIC fallback
+#   phy_name <- "PGLS (PIC)"
+# }
+
+# fit_ols <- lm(log_fat ~ log_mass, data = bysp_clean)
+
+# library(broom)
+# ## --- OLS is always an lm object -------------------------------------------
+# tidy_ols <- tidy(fit_ols)
+
+# ## --- PGLS: phylolm vs. PIC  -----------------------------------------------
+# if (inherits(fit_phy, "phylolm")) {
+#   ct   <- summary(fit_phy)$coefficients
+#   pcol <- if ("p.value" %in% colnames(ct)) "p.value" else "Pr(>|t|)"
+
+#   tidy_phy <- data.frame(
+#       term      = rownames(ct),
+#       estimate  = ct[, "Estimate"],
+#       std.error = ct[, "StdErr"],
+#       statistic = ct[, "t.value"],
+#       p.value   = ct[, pcol],
+#       row.names = NULL
+#   )
+# } else {                       # PIC fallback is an lm object
+#   tidy_phy <- tidy(fit_phy)
+# }
+
+# ## --- combine and print -----------------------------------------------------
+# out <- rbind(
+#   cbind(model = "OLS",           tidy_ols),
+#   cbind(model = phy_name,        tidy_phy)
 # )
-
-
-# 4. prune & reorder the data frame ----------------------------------------
-bysp_clean <- bysp_clean[ tree$tip.label , , drop = FALSE ]   # row-order = tree
-###############################################################################
-
-# 5. constant branch lengths + postorder (simple, safe) ---------------------
-tree$edge.length <- rep(1, nrow(tree$edge))
-tree <- reorder(tree, "postorder")
+# print(out)
+# """
 
 
 
-
-# OR JUST READ IN EMILY JANE'S TREE!
-tree<-read.tree("~/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/dated_tree.tre")
-# replace the space between genus and species with an underscore to match EJ format
-rownames(bysp_clean) <- gsub(" ", "_", rownames(bysp_clean))
-tree$root.edge = 0
-
-
-
-
-###############################################################################
-##  MODELS  ###################################################################
-###############################################################################
-if (requireNamespace("phylolm", quietly = TRUE)) {
-  fit_phy <- phylolm(log_fat ~ log_mass,
-                     data = bysp_clean,
-                     phy  = tree,
-                     model = "BM", method = "ML")
-  phy_name <- "PGLS (phylolm)"
-} else {
-  pic_mass <- pic(bysp_clean$log_mass, tree)
-  pic_fat  <- pic(bysp_clean$log_fat,  tree)
-  fit_phy  <- lm(pic_fat ~ pic_mass - 1)        # PIC fallback
-  phy_name <- "PGLS (PIC)"
-}
-
-fit_ols <- lm(log_fat ~ log_mass, data = bysp_clean)
-
-library(broom)
-## --- OLS is always an lm object -------------------------------------------
-tidy_ols <- tidy(fit_ols)
-
-## --- PGLS: phylolm vs. PIC  -----------------------------------------------
-if (inherits(fit_phy, "phylolm")) {
-  ct   <- summary(fit_phy)$coefficients
-  pcol <- if ("p.value" %in% colnames(ct)) "p.value" else "Pr(>|t|)"
-
-  tidy_phy <- data.frame(
-      term      = rownames(ct),
-      estimate  = ct[, "Estimate"],
-      std.error = ct[, "StdErr"],
-      statistic = ct[, "t.value"],
-      p.value   = ct[, pcol],
-      row.names = NULL
-  )
-} else {                       # PIC fallback is an lm object
-  tidy_phy <- tidy(fit_phy)
-}
-
-## --- combine and print -----------------------------------------------------
-out <- rbind(
-  cbind(model = "OLS",           tidy_ols),
-  cbind(model = phy_name,        tidy_phy)
-)
-print(out)
-"""
-
-
-
-@rget out      # now `out` is back in Julia as a DataFrame
+# @rget out      # now `out` is back in Julia as a DataFrame
 
 
 
