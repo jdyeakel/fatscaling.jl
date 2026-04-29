@@ -105,7 +105,7 @@ The main bidirectional exchange is:
 
 ### `data/fat_full_dataset.csv`
 
-Primary empirical dataset with 427 data records. The script excludes rows with `taxa == "mammal"` when species-level identity is required and excludes `measure_estimate == "estimated"` from fitted models.
+Primary empirical dataset with 428 data records. The script excludes rows with `taxa == "mammal"` when species-level identity is required and excludes `measure_estimate == "estimated"` from fitted models.
 
 | Column | Description |
 |---|---|
@@ -118,7 +118,7 @@ Primary empirical dataset with 427 data records. The script excludes rows with `
 
 ### `data/Navarrete_fat.csv`
 
-Dataset used for the captive/wild comparison, with 99 data records.
+Dataset used for the captive/wild comparison, with 100 data records.
 
 | Column | Description |
 |---|---|
@@ -198,7 +198,7 @@ Simulation-derived four-row coordinate table written by `fatscaling_model_analys
 
 ### `data/simdata/expgainremainderslope.CSV`
 
-Two-column Mathematica-generated CSV with 351 numeric rows and no descriptive text header. The model script converts it to an array and uses the columns by position when plotting the analytical expected-slope curve.
+Two-column Mathematica-generated CSV with 351 numeric rows and no descriptive text header. With the script's default `CSV.read` call, the first numeric row is treated as column names and the remaining 350 rows are converted to an array for plotting the analytical expected-slope curve.
 
 | Column | Description |
 |---|---|
@@ -270,7 +270,7 @@ The Mathematica notebooks record these front-end versions:
 
 ## Running the Analyses
 
-Run commands from the repository root:
+Run commands from the directory that contains this README. If you are one level above the repository directory, enter it first:
 
 ```bash
 cd fatscaling
