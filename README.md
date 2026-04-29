@@ -4,7 +4,7 @@ Repository for the manuscript **An origin for the allometric scaling of mammalia
 
 Authors: Justin D. Yeakel, Mason Fan, Emily Jane McTavish, Anna Carolina de Almeida, Christopher P. Kempes, Sora Kim, Greg Breed
 
-`fatscaling.jl` contains the data, Julia source code, Julia analysis scripts, and Wolfram Mathematica notebooks used to analyze empirical mammalian fat scaling and a bioenergetic foraging model. The repository is organized so that empirical data feed into `scripts/fatscaling_empirical_analyses.jl`, simulated model outputs feed into the Mathematica notebooks, and selected Mathematica analytical outputs feed back into `scripts/fatscaling_model_analyses.jl`.
+`fatscaling.jl` contains the data, Julia source code, Julia analysis scripts, and Wolfram Mathematica notebooks used to analyze empirical mammalian fat scaling and a bioenergetic foraging model. The repository is organized so that empirical data feed into `scripts/fatscaling_empirical_analyses.jl`, simulated model outputs feed into the Mathematica notebooks, and selected Mathematica analytical outputs feed back into `scripts/fatscaling_model_analyses.jl`. This README was assembled with help from an AI, with multiple human and silicon audits and sandboxed code checks.  
 
 ## Repository Organization
 
