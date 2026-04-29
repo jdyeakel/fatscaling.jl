@@ -202,31 +202,29 @@ for g = 1:n_gut
     minmuany_array[g] = minmuany
 end
 
-# 2 GB file
-
-# filename=smartpath("data/simdata/gainsremainder_acrossgut.jld2")
-
-# Pull file from external location
-# NOTE: Delete prior to archiving
-filename = string(homedir(),"/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/simdata/gainsremainder_acrossgut.jld2");
-
-# @save filename gut_types n_gut massexpvec massvec l_massvec teeth alpha edensity muexpvec l_muexpvec zetavec l_zetavec reps gains_array costs_array encounters_array cons_maxgut_array gaindiff_array gainremainder_array remainder_mu_slope_all minmass_array 
+# WARNING: Creates a 2 GB file
+#YOU WILL NEED TO DIRECT TO OWN FILEPATH
+filename=smartpath("../external_data/gainsremainder_acrossgut.jld2")
+@save filename gut_types n_gut massexpvec massvec l_massvec teeth alpha edensity muexpvec l_muexpvec zetavec l_zetavec reps gains_array costs_array encounters_array cons_maxgut_array gaindiff_array gainremainder_array remainder_mu_slope_all minmass_array 
 
 
 ###########################################################
-# OR Load Data to Create Figures 3,4,5
+# Once created, load Data to Create Figures 3,4,5
 ###########################################################
+#YOU WILL NEED TO DIRECT TO OWN FILEPATH
+filename = smartpath("../external_data/gainsremainder_acrossgut.jld2") 
 
 @load filename gut_types n_gut massexpvec massvec l_massvec teeth alpha edensity muexpvec l_muexpvec zetavec l_zetavec reps gains_array costs_array encounters_array cons_maxgut_array gaindiff_array gainremainder_array remainder_mu_slope_all minmass_array 
 
-# filepath = string(homedir(),"/Dropbox/PostDoc/2024_herbforaging/herbforagingsim/data/expgainremainderslope.CSV")
-filename = smartpath("data/expgainremainderslope.CSV")
+
+#THIS CSV FILE IS GENERATED IN THE MATHEMATICA NOTEBOOK gains_costs_allometry.nb
+filename = smartpath("data/simdata/expgainremainderslope.CSV")
 expgainremainder_poor = CSV.read(filename, DataFrame)
 expgainremainder_poor = Array(expgainremainder_poor)
 
 
 ###########################################################
-# GENERATE FIGURE 3
+# GENERATE FIGURE S3 in the supplement
 ###########################################################
 
 gut_types_cap = ["Caecum","Colon","Non-rumen foregut","Rumen foregut"]
@@ -306,7 +304,7 @@ Plots.savefig(pgutslope, figfile)
 
 
 ###########################################################
-# GENERATE FIGURE 5
+# GENERATE FIGURE 4
 ###########################################################
 
 gut_types_cap = ["Caecum","Colon","Non-rumen foregut","Rumen foregut"]
@@ -399,9 +397,10 @@ Plots.savefig(pslope, figfile)
 
 
 #######################################################################
-# ORGANIZE DATA FOR FIGURE 4... 
+# ORGANIZE DATA FOR FIGURE 3... 
 ########################################################################
-# EXPORT AND THEN IMPORT W/MATHEMATICA FILE: gains_costs_allometry_v2.nb
+# EXPORT AND THEN IMPORT W/MATHEMATICA FILE: gains_costs_allometry.nb
+# Figure 3 is created in the mathematica file from these generated data
 ########################################################################
 
 
@@ -508,55 +507,55 @@ CSV.write(filename, dfi)
 
 
 
-# EVALUATE WHERE gamma = 1.19
-#For zeta = 1.0
-# muvalue = -3.1
-muvalue = -3.06
-mupos = findall(x->x==muvalue,muexpvec)[1]; #1:231
-10 .^muexpvec[mupos]
-guti = 1
-zetai = 1
-gainsi = vec(mean(gains_array[guti],dims=1)[:,:,mupos,zetai]);
-costsi = vec(mean(costs_array[guti],dims=1)[:,:,mupos,zetai]);
-x = log.(massvec);
-y = log.(costsi);
-df = DataFrame(x = x, y = y);
-model = lm(@formula(y ~ x), df)
-plot(log.(massvec),log.(gainsi))
-plot!(log.(massvec),log.(costsi))
+# # EVALUATE WHERE gamma = 1.19
+# #For zeta = 1.0
+# # muvalue = -3.1
+# muvalue = -3.06
+# mupos = findall(x->x==muvalue,muexpvec)[1]; #1:231
+# 10 .^muexpvec[mupos]
+# guti = 1
+# zetai = 1
+# gainsi = vec(mean(gains_array[guti],dims=1)[:,:,mupos,zetai]);
+# costsi = vec(mean(costs_array[guti],dims=1)[:,:,mupos,zetai]);
+# x = log.(massvec);
+# y = log.(costsi);
+# df = DataFrame(x = x, y = y);
+# model = lm(@formula(y ~ x), df)
+# plot(log.(massvec),log.(gainsi))
+# plot!(log.(massvec),log.(costsi))
 
-#For zeta = 1.5
-# muvalue = -3.1
-muvalue = -3.06
-mupos = findall(x->x==muvalue,muexpvec)[1]; #1:231
-10 .^muexpvec[mupos]
-guti = 1
-zetai = 2
-gainsi = vec(mean(gains_array[guti],dims=1)[:,:,mupos,zetai]);
-costsi = vec(mean(costs_array[guti],dims=1)[:,:,mupos,zetai]);
-x = log.(massvec);
-y = log.(costsi);
-df = DataFrame(x = x, y = y);
-model = lm(@formula(y ~ x), df)
-plot(log.(massvec),log.(gainsi))
-plot!(log.(massvec),log.(costsi))
+# #For zeta = 1.5
+# # muvalue = -3.1
+# muvalue = -3.06
+# mupos = findall(x->x==muvalue,muexpvec)[1]; #1:231
+# 10 .^muexpvec[mupos]
+# guti = 1
+# zetai = 2
+# gainsi = vec(mean(gains_array[guti],dims=1)[:,:,mupos,zetai]);
+# costsi = vec(mean(costs_array[guti],dims=1)[:,:,mupos,zetai]);
+# x = log.(massvec);
+# y = log.(costsi);
+# df = DataFrame(x = x, y = y);
+# model = lm(@formula(y ~ x), df)
+# plot(log.(massvec),log.(gainsi))
+# plot!(log.(massvec),log.(costsi))
 
 
-#For zeta = 2.0
-# muvalue = -3.1
-muvalue = -3.06
-mupos = findall(x->x==muvalue,muexpvec)[1]; #1:231
-10 .^muexpvec[mupos]
-guti = 1
-zetai = 3
-gainsi = vec(mean(gains_array[guti],dims=1)[:,:,mupos,zetai]);
-costsi = vec(mean(costs_array[guti],dims=1)[:,:,mupos,zetai]);
-x = log.(massvec);
-y = log.(gainsi);
-df = DataFrame(x = x, y = y);
-model = lm(@formula(y ~ x), df)
-plot(log.(massvec),log.(gainsi))
-plot!(log.(massvec),log.(costsi))
+# #For zeta = 2.0
+# # muvalue = -3.1
+# muvalue = -3.06
+# mupos = findall(x->x==muvalue,muexpvec)[1]; #1:231
+# 10 .^muexpvec[mupos]
+# guti = 1
+# zetai = 3
+# gainsi = vec(mean(gains_array[guti],dims=1)[:,:,mupos,zetai]);
+# costsi = vec(mean(costs_array[guti],dims=1)[:,:,mupos,zetai]);
+# x = log.(massvec);
+# y = log.(gainsi);
+# df = DataFrame(x = x, y = y);
+# model = lm(@formula(y ~ x), df)
+# plot(log.(massvec),log.(gainsi))
+# plot!(log.(massvec),log.(costsi))
 
 
 
@@ -696,7 +695,8 @@ gaincostratiostarraw[1] - gaincostratiostar[1]
 
 
 #######################################################################
-# Gain/Cost Exponent Coordinates for FIGURE 6: Import into Mathematica File: reserveratio.nb
+# Gain/Cost Exponent Coordinates for FIGURE 5: Import into Mathematica File: reserveratio.nb
+# Figure 5 is created in the mathematica notebook
 ########################################################################
 
 #Create a table of g1,c1 coordinates
@@ -705,11 +705,12 @@ c1coords = [slopec[1,j,findmin(abs.(slopegr[1,j,:] .- gammastar))[2]] for j=1:l_
 
 g1c1df = DataFrame(zeta = zetavec, g1 = g1coords, c1 = c1coords, reserveratiodem = gaincostratiostar)   # names can be whatever you like
 
-# EXPORT TO IMPORT INTO MATHEMATIC FILE: reserveratio.nb
+# EXPORT TO IMPORT INTO MATHEMATICA FILE: reserveratio.nb
 filename = smartpath("data/simdata/g1c1coords_zeta.csv")
 CSV.write(filename, g1c1df)
 
 
+# Some additional calculations
 
 #Calculate the costs of growth and growing 2 offspring to 1/2 adult mass
 #These are the assumed sunk-costs required of carrying capacity
@@ -748,11 +749,8 @@ c_0 = coef(model)[1]
 
 
 #######################################################################
-# SUPPLEMENTARY FIGURES
+# ADDITIONAL SUPPLEMENTARY FIGURES
 ########################################################################
-
-
-
 
 #INVESTIGATE HOW ZETA INFLUENCE CV AND D as a function of body size
 
@@ -761,7 +759,7 @@ c_0 = coef(model)[1]
 gut_types = ["caecum", "colon", "non-rumen foregut", "rumen foregut"]
 n_gut = length(gut_types)
 
-# Your pre-existing parameter definitions
+# Pre-existing parameter definitions
 massexpvec = collect(1.5:0.1:4.4);
 massvec = 10 .^ massexpvec;
 l_massvec = length(massvec);
@@ -940,7 +938,7 @@ Plots.savefig(zpanelplot, figfile)
 # RESERVE RATIO FOR A DETAILED ZETA > 2 WHEN MU = 10^-2.8
 # FOR A SINGLE GUT TYPE
 
-# Your pre-existing parameter definitions
+# Pre-existing parameter definitions
 massexpvec = collect(1.5:0.1:4.4);
 massvec = 10 .^ massexpvec;
 l_massvec = length(massvec);
@@ -1103,7 +1101,6 @@ plot!(plt2,zetavec,repeat([minfeasiblemass],outer=l_zetavec),
     label=false,
     linestyle=:dot)
 
-    # assuming you already have `plt` and `plt2` defined...
 using Measures
 combined = plot(
     plt, plt2;
@@ -1116,381 +1113,4 @@ display(combined)
 figfile = smartpath("rawfigures/fig_reserveratio_highzeta.pdf")
 Plots.savefig(combined, figfile)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###################################
-# OLD
-###################################
-
-
-
-
-
-# Compressed single pane version
-# PLOT
-gut_types_cap = ["Caecum", "Colon", "Non-rumen foregut", "Rumen foregut"]
-x₀ = -2.5
-# colors = cgrad(:roma, 4, categorical = true)
-colors = palette(:tab10) #, n_gut)  # Get exactly n_gut colors
-#[:red, :blue, :green, :purple]
-# 1) build your 2×2 canvas with NO per‐panel axis‐titles:
-pratio = plot(
-  layout                  = (1,1),
-  frame                   = :box,
-  foreground_color_legend = nothing,
-  legend=:topright
-)
-zetavec2 = [1,3]; #Int64.(zetavec[[1,3]])
-# 2) same double‐loop + your if‐logic for the legend
-for (g, gut) in enumerate(gut_types_cap)
-  for j in zetavec2
-    println(j)
-    # j = 1
-    # create masks for the two line‐styles
-    mask1 = muexpvec .<= x₀
-    mask2 = muexpvec .>= x₀
-    col = colors[g]
-    gammapos = findmin(abs.(slopegr[g,j,:] .- gammastar))[2]
-    # — solid up to x₀
-    plot!(
-      pratio,
-      muexpvec[mask1], gaincostratio[g, j, mask1],
-      subplot  = 1,
-      ylabel   = L"Reserve ratio, $\phi^{\mathrm{dem}}$",
-      xlabel   = L"Richness, $\log_{10}(\mu)$",
-      ylims = [1.0,1.5],
-      linestyle= :solid,
-      color     = col, #(g == 2 ? "ζ = $z" : false),
-      label    = (j == 1 ? gut_types_cap[g] : false),
-      width    = 2
-    )
-    # — dashed after x₀
-    plot!(
-      pratio,
-      muexpvec[mask2], gaincostratio[g, j, mask2],
-      subplot   = 1,
-      linestyle = :dash,
-      color     = col,
-      label     = false,
-      width     = 2
-    )
-    scatter!(
-        pratio,
-        subplot  = 1,
-        [muexpvec[gammapos]],[gaincostratio[g,j,gammapos]],
-        color = "black",
-        label = ""
-    )
-  end
-end
-Plots.annotate!(
-      pratio,
-      subplot = 1,
-      -2.88, 1.36,
-      text(L"\zeta=2", 15, halign = :left)
-    )
-Plots.annotate!(
-    pratio,
-    subplot = 1,
-    -3.4, 1.36,
-    text(L"\zeta=1", 15, halign = :left)
-    )
-pratio
-
-figfile = smartpath("rawfigures/fig_gainsremainder_gcratiov2.pdf");
-Plots.savefig(pratio, figfile)
-
-
-
-
-
-
-
-
-
-
-
-plot!(mzplot,(massvec),mean(dist,dims=3)[2,:,:],
-    col=zetacolors[1])
-plot!(mzplot,(massvec),mean(dist,dims=3)[3,:,:],
-    col=zetacolors[1])
-plot!(mzplot,(massvec),mean(dist,dims=3)[4,:,:],
-    col=zetacolors[1])
-scatter!(mzplot,(massvec),m_ind[1,:],
-col=zetacolors[1])
-scatter!(mzplot,(massvec),m_ind[2,:])
-scatter!(mzplot,(massvec),m_ind[3,:])
-scatter!(mzplot,(massvec),m_ind[4,:])
-
-
-#Mean STD across body mass with increasing zeta
-pos4 = var_ind[4,:] .> 0;
-sdzplot = plot((massvec),(std(dist,dims=3)[1,:,:]),xscale=:log10,yscale=:log10)
-plot!(sdzplot,(massvec),(std(dist,dims=3)[2,:,:]))
-plot!(sdzplot,(massvec),(std(dist,dims=3)[3,:,:]))
-plot!(sdzplot,(massvec),(std(dist,dims=3)[4,:,:]))
-scatter!(sdzplot,(massvec),(sqrt.(var_ind[1,:])))
-scatter!(sdzplot,(massvec),(sqrt.(var_ind[2,:])))
-scatter!(sdzplot,(massvec),(sqrt.(var_ind[3,:])))
-scatter!(sdzplot,(massvec[pos4]),(sqrt.(var_ind[4,pos4])))
-
-
-
-
-
-
-
-
-
-#export data table
-masszetaCV = DataFrame(mass=massvec,CVzeta1=cv_ind[1,:],CVzeta15=cv_ind[2,:],CVzeta2=cv_ind[3,:],CVzeta215=cv_ind[4,:])
-masszetaMean = DataFrame(mass=massvec,Meanzeta1=m_ind[1,:],Meanzeta15=m_ind[2,:],Meanzeta2=m_ind[3,:],Meanzeta215=m_ind[4,:])
-masszetaVar = DataFrame(mass=massvec,Varzeta1=var_ind[1,:],Varzeta15=var_ind[2,:],Varzeta2=var_ind[3,:],Varzeta215=var_ind[4,:])
-
-
-
-
-
-
-# GainRemainder Plot for HIGH ZETA
-zetapos = 4;
-gut_types_cap = ["Caecum","Colon","Non-rumen foregut","Rumen foregut"]
-gut_type_maxgutslope = [0.860,0.919,0.881,0.897];
-pslopehighz = plot(
-    xlabel = L"Richness, $\mu$",
-    ylabel = L"Forage excess exponent, $g_R \propto M^\gamma$",
-    ylims = (0.8, 1.3),
-    legend = :topright,
-    frame = :box,
-    foreground_color_legend = nothing
-              )
-colors = palette(:tab10) #, n_gut)  # Get exactly n_gut colors
-for g in 1:n_gut
-    col = colors[g]
-    gutslope = gut_type_maxgutslope[g]
-    x = log.(massvec)
-    y = log.(vec(mean(costs_array[g],dims=1)[:,:,end,zetapos]))
-    df = DataFrame(x = x, y = y)
-    model = lm(@formula(y ~ x), df)
-    intc, _ = coef(model)
-    x = log.(massvec)
-    y = log.(vec(mean(gains_array[g],dims=1)[:,:,end,zetapos]))
-    df = DataFrame(x = x, y = y)
-    model = lm(@formula(y ~ x), df)
-    intg, g_slope = coef(model)
-    int = exp(intg)/exp(intc)
-    c_slope =0.75;
-    # exp_slope = c_slope + ((int*(gutslope-c_slope))*massvec[end]^(gutslope-c_slope))/(int*massvec[end]^(gutslope-c_slope) - 1)
-    # From Mathematica Solution
-    M = 100000; #Asymptotic Mass
-    exp_slope2 = g_slope + (intc*(c_slope - g_slope)*M^c_slope)/(intc*M^c_slope - intg*M^g_slope)
-    plot!(pslopehighz,muexpvec, remainder_mu_slope_all[g, :], label=gut_types_cap[g], lw=2,color=col)
-    scatter!(pslopehighz, [muexpvec[end]], [exp_slope2],markersize=5,color=col,label="")
-end
-#Find the minimum mu where a mass < 100 results in a positive gain remainder
-#NOTE: Shouldn't minmass be a function of gut type? - no same across all! 04/07/25
-minmu = muexpvec[findall(x->x<50,minmass_array[3])][1]
-minmu_yvalues = collect(0.8:0.1:1.3)
-minmu_xvalues = repeat([minmu], outer=length(minmu_yvalues))
-# Add the line to the plot
-Plots.plot!(pslopehighz, minmu_xvalues, minmu_yvalues,
-    color=:orange,
-    width=2,
-    linestyle = :dash,
-    label = "")
-minmu = muexpvec[findall(x->x<150,minmass_array[3])][1]
-minmu_yvalues = collect(0.8:0.1:1.3)
-minmu_xvalues = repeat([minmu], outer=length(minmu_yvalues))
-# Add the line to the plot
-Plots.plot!(pslopehighz, minmu_xvalues, minmu_yvalues,
-    color=:red,
-    width=2,
-    linestyle = :dash,
-    label = "")
-#because muexpvec is the exponent vector for mu = 10^i, use log10 below!
-Plots.plot!(pslopehighz,log10.(expgainremainder_poor[:,1]),(expgainremainder_poor[:,2]),
-    xlims=[muexpvec[1],muexpvec[end]+0.1],
-    color=:black,
-    label="Expected slope",
-    width = 2,
-    linestyle = :dot
-    # markersize=3,
-    )
-display(pslopehighz)
-
-
-
-
-
-
-
-
-current_gut_type = gut_types[1]
-teeth = "all"
-mass = 1000
-mu = 10^-3.0
-alpha = 4
-# zetavec = collect(1.:0.5:3.)
-reps = 50000
-g_reps = Array{Float64}(undef,length(zetavec),reps)
-c_reps = Array{Float64}(undef,length(zetavec),reps)
-for i=1:length(zetavec)
-    zeta = zetavec[i]
-    for r=1:reps
-        # Compute consumer and resource properties
-        beta = bite_size_allo(mass)
-        chewrate = chew_allo(mass, teeth)
-        t_chewgram = 1 / chewrate
-        tchew = t_chewgram * beta
-        maxgut = gut_capacity_g(mass, current_gut_type)
-        bcost_kJps, fcost_kJps = metabolic_cost(mass)
-        velocity = find_velocity(mass)
-        tmax_bout, _ = foragingtime(mass) .* (60 * 60)
-        ndensity, n = indperarea(mass)
-        width = reactionwidth(mass)
-        height = reactionheight(mass)
-        #adjacent competitor density (inds/m)
-        na = n/(width*height);
-                    
-        m_res =  mu * (1 / beta) #* height #* width
-        mprime = m_res / na
-        alphaprime = alpha * na^(zeta - 2)
-        
-        # configurations = 200000  # note: adjust if needed
-        gammadist = Gamma(alphaprime, mprime / alphaprime)
-        
-        # Compute daily foraging outcomes
-        gains_daily, costs_daily, encounters_daily = dailyforage(gammadist, tchew, beta, maxgut, velocity, bcost_kJps, fcost_kJps, edensity, tmax_bout)
-
-        g_reps[i,r] = gains_daily
-        c_reps[i,r] = costs_daily
-    end
-end
-
-
-exp_g = [mean(g_reps[i,:]) for i=1:length(zetavec)]
-std_g = [std(g_reps[i,:]) for i=1:length(zetavec)]
-exp_c = [mean(c_reps[i,:]) for i=1:length(zetavec)]
-std_c = [std(c_reps[i,:]) for i=1:length(zetavec)]
-gain_stats_df = DataFrame(
-    zeta = zetavec,
-    mean_gain = exp_g,
-    std_gain = std_g,
-    mean_cost = exp_c,
-    std_cost = std_c
-)
-display(gain_stats_df)
-
-
-
-
-# PLOT
-gut_types_cap = ["Caecum", "Colon", "Non-rumen foregut", "Rumen foregut"]
-x₀ = -2.5
-colors = cgrad(:roma, 4, categorical = true)
-#[:red, :blue, :green, :purple]
-# 1) build your 2×2 canvas with NO per‐panel axis‐titles:
-pratio = plot(
-  layout                  = (2,2),
-  frame                   = :box,
-  foreground_color_legend = nothing,
-  legend=:bottomright
-)
-zetavec2 = zetavec[1:3]
-# 2) same double‐loop + your if‐logic for the legend
-for (g, gut) in enumerate(gut_types_cap)
-  for (j, z) in enumerate(zetavec2)
-    # create masks for the two line‐styles
-    mask1 = muexpvec .<= x₀
-    mask2 = muexpvec .>= x₀
-    col = colors[j]
-    gammapos = findmin(abs.(slopegr[g,j,:] .- 1.17))[2]
-    # — solid up to x₀
-    plot!(
-      pratio,
-      muexpvec[mask1], gaincostratio[g, j, mask1],
-      subplot  = g,
-      ylabel   = ((g == 1 || g == 3) ? L"Reserve ratio, $\phi$"    : ""),
-      xlabel   = ((g == 3 || g == 4) ? L"Richness, $\log(\mu)$" : ""),
-      ylims = [1.0,1.5],
-      linestyle= :solid,
-      color     = col,
-      label    = (g == 2 ? "ζ = $z" : false),
-      width    = 2
-    )
-    # — dashed after x₀
-    plot!(
-      pratio,
-      muexpvec[mask2], gaincostratio[g, j, mask2],
-      subplot   = g,
-      linestyle = :dash,
-      color     = col,
-      label     = false,
-      width     = 2
-    )
-    scatter!(
-        pratio,
-        subplot  = g,
-        [muexpvec[gammapos]],[gaincostratio[g,j,gammapos]],
-        color = col,
-        label = ""
-    )
-    # your annotation
-    Plots.annotate!(
-      pratio,
-      subplot = g,
-      -1, 1.45,
-      text(string(gut), 8, halign = :right)
-    )
-  end
-end
-pratio
-
-figfile = smartpath("rawfigures/fig_gainsremainder_gcratio.pdf")
-Plots.savefig(pratio, figfile)
 

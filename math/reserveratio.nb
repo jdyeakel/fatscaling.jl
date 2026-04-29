@@ -8229,7 +8229,7 @@ Cell[BoxData["1.4268564887583222`"], "Output",
 WindowSize->{1212, 998},
 WindowMargins->{{106, Automatic}, {Automatic, 16}},
 LightDark->"Light",
-FrontEndVersion->"14.3 for Mac OS X ARM (64-bit) (July 8, 2025)",
+FrontEndVersion->"14.3 for Mac OS X x86 (64-bit) (July 8, 2025)",
 StyleDefinitions->"Default.nb",
 ExpressionUUID->"dbbd302b-f789-4b27-867a-5998d775f131"
 ]
@@ -8332,7 +8332,7 @@ Cell[264157, 5471, 124195, 2596, 717, "Output",ExpressionUUID->"2ce739b0-0c40-4d
 Cell[388367, 8070, 128, 3, 29, "Input",ExpressionUUID->"6da2e635-f014-47c7-840d-d8fdf5a6b502"],
 Cell[CellGroupData[{
 Cell[388520, 8077, 475, 10, 29, "Input",ExpressionUUID->"14a22893-ec2e-4062-8cd1-a258b52957cc"],
-Cell[388998, 8089, 489, 6, 77, "Output",ExpressionUUID->"66c07bc6-f4bd-4be5-a4c7-420fa216c319"]
+Cell[388998, 8089, 489, 6, 33, "Output",ExpressionUUID->"66c07bc6-f4bd-4be5-a4c7-420fa216c319"]
 }, Open  ]],
 Cell[389502, 8098, 192, 7, 77, "Text",ExpressionUUID->"7c530b1f-68ef-4c28-a972-a73e9bfac15c"],
 Cell[CellGroupData[{
