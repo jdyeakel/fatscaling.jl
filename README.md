@@ -91,7 +91,7 @@ Main operations:
 |---|---|
 | `math/gain_costs_allometry.nb` | Mathematica notebook that receives simulation summaries written by `scripts/fatscaling_model_analyses.jl` as `data/simdata/gaincostpoor_data.csv` and `data/simdata/gaincostpoor_zeta*_data.csv`. It also generates `data/simdata/expgainremainderslope.CSV`, which is read back into the Julia model script as an analytical expected-slope curve. |
 | `math/reserveratio.nb` | Mathematica notebook that receives `data/simdata/g1c1coords_zeta.csv` from `scripts/fatscaling_model_analyses.jl` for reserve-ratio figure generation. |
-| `math/storage_diff_drift_approx.nb` | Mathematica notebook retained with the analytical materials. It is not referenced by either main Julia script, so no direct Julia read/write dependency is inferred from the scripts. |
+| `math/storage_diff_drift_approx.nb` | Mathematica notebook retained with the analytical materials. It explores drift-dominated vs. diffusion-dominated fat storage assumptions described in the Supplemental Materials, and is used to assemble Figure S7. |
 
 The main bidirectional exchange is:
 
