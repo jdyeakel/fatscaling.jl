@@ -276,64 +276,46 @@ Run commands from the directory that contains this README. If you are one level 
 cd fatscaling
 ```
 
-The author's local shell helper for opening Julia with a selected thread count and project is:
+Julia can be run either in its default/global environment or in a local project environment. Running plain `julia` uses the default Julia environment for your user account, which may not contain this repository's local package or the package versions recorded in `Project.toml` and `Manifest.toml`. Running with `--project=.` activates the project in the current directory, so Julia loads the local `fatscaling` package and resolves dependencies from the checked-in project files.
+
+To open an interactive Julia session in project mode from this directory:
 
 ```bash
-jt() {
-  local threads proj
-
-  if [[ $# -gt 0 && "$1" =~ ^[0-9]+$ ]]; then
-    threads=$1
-    shift
-  else
-    threads=${JULIA_NUM_THREADS:-1}
-  fi
-
-  export JULIA_NUM_THREADS="$threads"
-  echo "JULIA_NUM_THREADS=$JULIA_NUM_THREADS"
-
-  if [[ $# -gt 0 && "$1" != -* ]]; then
-    proj="--project=$1"
-    shift
-  else
-    proj="--project"
-  fi
-
-  julia $proj "$@"
-}
+julia --project=.
 ```
-
-For example, from inside `fatscaling/`, `jt 8 .` is equivalent to launching Julia with eight threads and `--project=.`.
 
 To instantiate the checked-in project environment:
 
 ```bash
-jt 8 . -e 'using Pkg; Pkg.instantiate()'
+julia --project=. -e 'using Pkg; Pkg.instantiate()'
 ```
 
 On a clean machine, the additional script-only Julia packages listed above must also be available either in the active project or in the Julia v1.11 stacked environment. To install them into the active project, run:
 
 ```bash
-jt 8 . -e 'using Pkg; Pkg.add(["CSV", "CategoricalArrays", "ColorSchemes", "Colors", "GLM", "JLD2", "LaTeXStrings", "Measures", "MixedModels", "Plots", "ProgressMeter", "RCall", "Revise", "StatsModels", "StatsPlots", "UnicodePlots"])'
+julia --project=. -e 'using Pkg; Pkg.add(["CSV", "CategoricalArrays", "ColorSchemes", "Colors", "GLM", "JLD2", "LaTeXStrings", "Measures", "MixedModels", "Plots", "ProgressMeter", "RCall", "Revise", "StatsModels", "StatsPlots", "UnicodePlots"])'
 ```
 
-To run the empirical analyses:
+The analysis scripts are organized as reproducible workflows, but they are best run section by section from within the script rather than launched all at once from the shell. This makes it easier to inspect intermediate objects, confirm file paths, rerun individual model/plotting blocks, and handle the longer model simulation steps deliberately.
+
+For an interactive section-by-section workflow, start Julia in project mode with the desired number of threads:
 
 ```bash
-jt 8 . scripts/fatscaling_empirical_analyses.jl
+JULIA_NUM_THREADS=8 julia --project=.
 ```
 
-To run the model analyses:
+Then open one of the main scripts in your editor and evaluate the relevant blocks in order:
 
-```bash
-jt 8 . scripts/fatscaling_model_analyses.jl
-```
+- `scripts/fatscaling_empirical_analyses.jl`
+- `scripts/fatscaling_model_analyses.jl`
 
-The model script writes/loads `../external_data/gainsremainder_acrossgut.jld2` relative to the package root. The script comments indicate that this file is about 2 GB and that users may need to create the sibling `external_data/` directory or adjust the path before running the full model workflow.
+Adjust `JULIA_NUM_THREADS=8` for your machine, or omit it to use Julia's default thread count. The empirical script can usually be stepped through directly after installing the required Julia and R packages. The model script contains longer simulation and data-writing sections, so it is especially useful to run that script block by block and confirm the expected inputs/outputs before continuing.
+
+The model script writes/loads `../external_data/gainsremainder_acrossgut.jld2` relative to the package root. This file is about 2 GB and users may need to create the sibling `external_data/` directory or adjust the path before running the full model workflow.
 
 ## Citation
 
-If you use this repository, please cite the associated manuscript. DOI and public repository citation should be added here after acceptance and public archiving.
+If you use this repository, please cite the associated manuscript.
 
 ## Example Run
 
