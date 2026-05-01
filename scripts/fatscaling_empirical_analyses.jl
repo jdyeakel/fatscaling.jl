@@ -23,6 +23,14 @@ using CategoricalArrays, StatsModels, MixedModels
 
 #--------------------------------------------------------
 
+
+#-----------------------------------------------
+
+##################################
+# MASS-FAT EMPIRICAL FIGURE
+##################################
+
+
 ##################################
 # OLS
 ##################################
@@ -102,12 +110,6 @@ println("  large:  $(round(sl_large.slope; digits=3)) ± $(round(sl_large.se; di
 
 
 
-#-----------------------------------------------
-
-##################################
-# MASS-FAT EMPIRICAL FIGURE
-##################################
-
 filename = smartpath("data/fat_full_dataset.csv")
 fatdata = CSV.read(filename,DataFrame)
 
@@ -126,8 +128,8 @@ estpos = findall(x->x=="estimated",fatdata[!,:measure_estimate])
 
 colors = palette(:tab10)
 fatplot = scatter(fatdata[!,:mass_kg][largepos],fatdata[!,:fatmass_kg][largepos],
-    xlabel="Body mass, M (kg)",
-    ylabel="Fat mass (kg)",
+    xlabel=L"Body mass, $M$ (kg)",
+    ylabel=L"Body mass, $M_f$ (kg)",
     xscale=:log10,
     yscale=:log10,
     color=:black,

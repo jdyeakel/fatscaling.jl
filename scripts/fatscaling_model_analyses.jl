@@ -310,7 +310,7 @@ Plots.savefig(pgutslope, figfile)
 gut_types_cap = ["Caecum","Colon","Non-rumen foregut","Rumen foregut"]
 gut_type_maxgutslope = [0.860,0.919,0.881,0.897];
 pslope = plot(
-    xlabel = L"Richness, $\log_{10}(\mu)$",
+    xlabel = L"Richness, $\log_{10}(\mu)$ $(\mathrm{g} \cdot \mathrm{m}^{-3})$",
     ylabel = L"Gain surplus exponent, $g_S \propto M^\gamma$",
     ylims = (0.8, 1.3),
     legend = :topright,
