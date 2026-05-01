@@ -262,9 +262,9 @@ The Mathematica notebooks record these front-end versions:
 
 | Notebook | Recorded Wolfram front end |
 |---|---|
-| `math/gain_costs_allometry.nb` | 14.3 for Mac OS X x86 (64-bit), July 8, 2025 |
-| `math/reserveratio.nb` | 14.3 for Mac OS X x86 (64-bit), July 8, 2025 |
-| `math/storage_diff_drift_approx.nb` | 14.2 for Mac OS X x86 (64-bit), March 16, 2025 |
+| `math/gain_costs_allometry.nb` | 14.3 for Mac OS X ARM (64-bit), July 8, 2025 |
+| `math/reserveratio.nb` | 14.3 for Mac OS X ARM (64-bit), July 8, 2025 |
+| `math/storage_diff_drift_approx.nb` | 14.3 for Mac OS X ARM (64-bit), July 8, 2025 |
 
 `wolframscript -version` reported WolframScript 1.12.0 for Mac OS X ARM (64-bit).
 
